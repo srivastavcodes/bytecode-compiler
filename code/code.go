@@ -3,13 +3,14 @@ package code
 import (
 	"encoding/binary"
 	"fmt"
+	"strings"
 )
 
 const (
 	OpConstant Opcode = iota
 )
 
-type Instruction []byte
+type Instructions []byte
 
 type Opcode byte
 
@@ -57,4 +58,55 @@ func Make(op Opcode, operands ...int) []byte {
 		offset += width
 	}
 	return instruction
+}
+
+func (ins Instructions) String() string {
+	var out strings.Builder
+
+	for i := 0; i < len(ins); {
+		def, err := Lookup(ins[i])
+		if err != nil {
+			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			continue
+		}
+		operands, read := ReadOperands(def, ins[i+1:])
+		str := ins.fmtInstruction(def, operands)
+
+		fmt.Fprintf(&out, "%04d %s\n", i, str)
+		i += 1 + read
+	}
+	return out.String()
+}
+
+func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
+	operandCount := len(def.OperandWidth)
+
+	if len(operands) != operandCount {
+		return fmt.Sprintf("ERROR: "+
+			"operand len %d does not match defined %d\n", len(operands), operandCount)
+	}
+	switch operandCount {
+	case 1:
+		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	}
+	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
+}
+
+// ReadOperands extracts operand values from bytecode instruction bytes.
+// Takes a definition specifying operand widths and returns the decoded operands
+// along with the total bytes consumed.
+//
+// Example: ReadOperands(Opcode Definition, [0xFF, 0xFE]) returns ([65534], 2)
+func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
+	operands := make([]int, len(def.OperandWidth))
+	offset := 0
+
+	for i, width := range def.OperandWidth {
+		switch width {
+		case 2:
+			operands[i] = int(binary.BigEndian.Uint16(ins[offset:]))
+		}
+		offset += width
+	}
+	return operands, offset
 }
