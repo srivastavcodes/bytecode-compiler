@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/user"
 
-	"Interpreter_in_Go/repl"
+	"Flint-v2/repl"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package object
 
 import (
-	"Interpreter_in_Go/ast"
+	"Flint-v2/ast"
 	"fmt"
 	"hash/fnv"
 	"strings"

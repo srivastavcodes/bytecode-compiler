@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"Interpreter_in_Go/token"
+	"Flint-v2/token"
 	"testing"
 )
 

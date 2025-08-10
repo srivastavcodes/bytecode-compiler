@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"Interpreter_in_Go/token"
+	"Flint-v2/token"
 )
 
 type Lexer struct {

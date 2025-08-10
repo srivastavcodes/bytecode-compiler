@@ -1,7 +1,7 @@
 package evaluator
 
 import (
-	"Interpreter_in_Go/object"
+	"Flint-v2/object"
 	"fmt"
 )
 

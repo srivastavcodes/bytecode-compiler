@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"Interpreter_in_Go/ast"
-	"Interpreter_in_Go/object"
+	"Flint-v2/ast"
+	"Flint-v2/object"
 	"fmt"
 )
 

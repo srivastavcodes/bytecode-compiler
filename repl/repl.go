@@ -1,14 +1,14 @@
 package repl
 
 import (
-	"Interpreter_in_Go/evaluator"
-	"Interpreter_in_Go/object"
-	"Interpreter_in_Go/parser"
+	"Flint-v2/evaluator"
+	"Flint-v2/object"
+	"Flint-v2/parser"
 	"bufio"
 	"fmt"
 	"io"
 
-	"Interpreter_in_Go/lexer"
+	"Flint-v2/lexer"
 )
 
 const PROMPT = ">>"

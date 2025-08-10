@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"Interpreter_in_Go/lexer"
-	"Interpreter_in_Go/object"
-	"Interpreter_in_Go/parser"
+	"Flint-v2/lexer"
+	"Flint-v2/object"
+	"Flint-v2/parser"
 	"testing"
 )
 

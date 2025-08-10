@@ -30,9 +30,10 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
-// Make creates a bytecode instruction by combining an opcode with its operands.
-// Returns a byte slice with the opcode as first byte followed by operands encoded
+// Make Returns a byte slice with the opcode as first byte followed by operands encoded
 // in big-endian format according to their defined widths.
+//
+// Example: Make(OpConstant, 65534) returns [OpConstant, 0xFF, 0xFE]
 func Make(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
 	if !ok {

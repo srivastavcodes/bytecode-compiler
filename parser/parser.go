@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"Interpreter_in_Go/ast"
-	"Interpreter_in_Go/lexer"
-	"Interpreter_in_Go/token"
+	"Flint-v2/ast"
+	"Flint-v2/lexer"
+	"Flint-v2/token"
 )
 
 const (
