@@ -2,5 +2,18 @@
 <project version="4">
   <component name="GoLinterSettings">
     <option name="customConfigFile" value="$USER_HOME$/.golangci.yaml" />
+    <option name="enabledLinters">
+      <list>
+        <option value="staticcheck" />
+        <option value="govet" />
+        <option value="dupl" />
+        <option value="mirror" />
+        <option value="zerologlint" />
+        <option value="gocritic" />
+        <option value="perfsprint" />
+        <option value="gosimple" />
+      </list>
+    </option>
+    <option name="linterSelected" value="true" />
   </component>
 </project>
