@@ -46,21 +46,38 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
-		switch node.Operator {
-		case "+":
-			cmp.emit(code.OpAdd)
-		case "-":
-			cmp.emit(code.OpSub)
-		case "*":
-			cmp.emit(code.OpMul)
-		case "/":
-			cmp.emit(code.OpDiv)
-		default:
-			return fmt.Errorf("unknown operator %s", node.Operator)
+		err = cmp.emitInfixOp(node)
+		if err != nil {
+			return err
+		}
+	case *ast.Boolean:
+		if !node.Value {
+			cmp.emit(code.OpFalse)
+		} else {
+			cmp.emit(code.OpTrue)
 		}
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		cmp.emit(code.OpConstant, cmp.addConstant(integer))
+	}
+	return nil
+}
+
+func (cmp *Compiler) emitInfixOp(node ast.Node) error {
+	switch node.(*ast.InfixExpression).Operator {
+	case "+":
+		cmp.emit(code.OpAdd)
+	case "-":
+		cmp.emit(code.OpSub)
+	case "*":
+		cmp.emit(code.OpMul)
+	case "/":
+		cmp.emit(code.OpDiv)
+	default:
+		return fmt.Errorf(
+			"unknown operator %s",
+			node.(*ast.InfixExpression).Operator,
+		)
 	}
 	return nil
 }

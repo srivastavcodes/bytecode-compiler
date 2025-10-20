@@ -14,6 +14,8 @@ import (
 
 const PROMPT = ">>"
 
+// TODO: add file support with extension .sc?
+
 func Start(input io.Reader, output io.Writer) {
 	scanner := bufio.NewScanner(input)
 	// env := object.NewEnvironment()

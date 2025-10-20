@@ -9,6 +9,11 @@ import (
 	"fmt"
 )
 
+var (
+	True  = &object.Boolean{Value: true}
+	False = &object.Boolean{Value: false}
+)
+
 const StackSize = 2048
 
 type VM struct {
@@ -44,6 +49,16 @@ func (vm *VM) RunVM() error {
 			ip += 2
 
 			err := vm.push(vm.constants[constIndex])
+			if err != nil {
+				return err
+			}
+		case code.OpTrue:
+			err := vm.push(True)
+			if err != nil {
+				return err
+			}
+		case code.OpFalse:
+			err := vm.push(False)
 			if err != nil {
 				return err
 			}
