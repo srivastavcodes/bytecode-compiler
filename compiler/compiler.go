@@ -36,6 +36,7 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
+		cmp.emit(code.OpPop)
 	case *ast.InfixExpression:
 		err := cmp.Compile(node.Left)
 		if err != nil {

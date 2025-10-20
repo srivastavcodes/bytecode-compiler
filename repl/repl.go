@@ -46,15 +46,15 @@ func Start(input io.Reader, output io.Writer) {
 			fmt.Fprintf(output, "Compilation failed:\n %s\n", err)
 			continue
 		}
-
 		vrm := vm.NewVM(cmp.ByteCode())
+
 		err = vrm.RunVM()
 		if err != nil {
 			fmt.Fprintf(output, "Executing bytecode failed:\n %s\n", err)
 			continue
 		}
+		stackTop := vrm.LastPoppedStackElement()
 
-		stackTop := vrm.StackTop()
 		io.WriteString(output, stackTop.Inspect())
 		io.WriteString(output, "\n")
 	}
