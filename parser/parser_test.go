@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"Flint-v2/ast"
-	"Flint-v2/lexer"
+	"comp/ast"
+	"comp/lexer"
 )
 
 func TestLetStatement(t *testing.T) {

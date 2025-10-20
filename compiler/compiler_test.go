@@ -1,11 +1,11 @@
 package compiler
 
 import (
-	"Flint-v2/ast"
-	"Flint-v2/code"
-	"Flint-v2/lexer"
-	"Flint-v2/object"
-	"Flint-v2/parser"
+	"comp/ast"
+	"comp/code"
+	"comp/lexer"
+	"comp/object"
+	"comp/parser"
 	"fmt"
 	"testing"
 )

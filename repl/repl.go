@@ -1,15 +1,15 @@
 package repl
 
 import (
-	"Flint-v2/compiler"
-	"Flint-v2/object"
-	"Flint-v2/parser"
-	"Flint-v2/vm"
 	"bufio"
+	"comp/compiler"
+	"comp/object"
+	"comp/parser"
+	"comp/vm"
 	"fmt"
 	"io"
 
-	"Flint-v2/lexer"
+	"comp/lexer"
 )
 
 const PROMPT = ">>"

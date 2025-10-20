@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"Flint-v2/ast"
-	"Flint-v2/lexer"
-	"Flint-v2/token"
+	"comp/ast"
+	"comp/lexer"
+	"comp/token"
 )
 
 const (

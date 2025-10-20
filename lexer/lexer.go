@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"Flint-v2/token"
+	"comp/token"
 )
 
 type Lexer struct {

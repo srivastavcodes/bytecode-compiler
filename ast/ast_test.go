@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"Flint-v2/token"
+	"comp/token"
 	"testing"
 )
 

@@ -3,7 +3,7 @@ package lexer
 import (
 	"testing"
 
-	"Flint-v2/token"
+	"comp/token"
 )
 
 func TestNextToken(t *testing.T) {

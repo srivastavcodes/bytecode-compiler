@@ -1,9 +1,9 @@
 package compiler
 
 import (
-	"Flint-v2/ast"
-	"Flint-v2/code"
-	"Flint-v2/object"
+	"comp/ast"
+	"comp/code"
+	"comp/object"
 	"fmt"
 )
 

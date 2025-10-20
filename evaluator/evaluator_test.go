@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"Flint-v2/lexer"
-	"Flint-v2/object"
-	"Flint-v2/parser"
+	"comp/lexer"
+	"comp/object"
+	"comp/parser"
 	"testing"
 )
 

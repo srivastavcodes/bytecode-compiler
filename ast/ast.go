@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"Flint-v2/token"
 	"bytes"
+	"comp/token"
 	"strings"
 )
 

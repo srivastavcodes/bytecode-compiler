@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"Flint-v2/code"
-	"Flint-v2/compiler"
-	"Flint-v2/object"
+	"comp/code"
+	"comp/compiler"
+	"comp/object"
 	"encoding/binary"
 	"errors"
 )

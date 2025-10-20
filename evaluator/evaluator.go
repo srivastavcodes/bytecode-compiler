@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"Flint-v2/ast"
-	"Flint-v2/object"
+	"comp/ast"
+	"comp/object"
 	"fmt"
 )
 

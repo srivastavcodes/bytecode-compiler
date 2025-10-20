@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/user"
 
-	"Flint-v2/repl"
+	"comp/repl"
 )
 
 func main() {

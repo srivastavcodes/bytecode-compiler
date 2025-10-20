@@ -1,7 +1,7 @@
 package object
 
 import (
-	"Flint-v2/ast"
+	"comp/ast"
 	"fmt"
 	"hash/fnv"
 	"strings"

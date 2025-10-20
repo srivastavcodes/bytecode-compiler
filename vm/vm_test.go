@@ -1,11 +1,11 @@
 package vm
 
 import (
-	"Flint-v2/ast"
-	"Flint-v2/compiler"
-	"Flint-v2/lexer"
-	"Flint-v2/object"
-	"Flint-v2/parser"
+	"comp/ast"
+	"comp/compiler"
+	"comp/lexer"
+	"comp/object"
+	"comp/parser"
 	"fmt"
 	"testing"
 )

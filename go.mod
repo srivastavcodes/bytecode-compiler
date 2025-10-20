@@ -1,3 +1,3 @@
-module Flint-v2
+module comp
 
 go 1.22
