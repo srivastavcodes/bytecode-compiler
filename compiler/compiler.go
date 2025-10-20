@@ -38,17 +38,31 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 		}
 		cmp.emit(code.OpPop)
 	case *ast.InfixExpression:
-		err := cmp.Compile(node.Left)
-		if err != nil {
-			return err
-		}
-		err = cmp.Compile(node.Right)
-		if err != nil {
-			return err
-		}
-		err = cmp.emitInfixOp(node)
-		if err != nil {
-			return err
+		switch {
+		case node.Operator == "<":
+			err := cmp.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+			err = cmp.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+			cmp.emit(code.OpGreaterThan)
+			return nil
+		default:
+			err := cmp.Compile(node.Left)
+			if err != nil {
+				return err
+			}
+			err = cmp.Compile(node.Right)
+			if err != nil {
+				return err
+			}
+			err = cmp.emitInfixOp(node)
+			if err != nil {
+				return err
+			}
 		}
 	case *ast.Boolean:
 		if !node.Value {
@@ -63,6 +77,8 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 	return nil
 }
 
+// emitInfixOp emits the corresponding code.Opcode for each infix
+// operator
 func (cmp *Compiler) emitInfixOp(node ast.Node) error {
 	switch node.(*ast.InfixExpression).Operator {
 	case "+":
@@ -73,6 +89,12 @@ func (cmp *Compiler) emitInfixOp(node ast.Node) error {
 		cmp.emit(code.OpMul)
 	case "/":
 		cmp.emit(code.OpDiv)
+	case ">":
+		cmp.emit(code.OpGreaterThan)
+	case "==":
+		cmp.emit(code.OpEqual)
+	case "!=":
+		cmp.emit(code.OpNotEqual)
 	default:
 		return fmt.Errorf(
 			"unknown operator %s",
@@ -94,7 +116,7 @@ func (cmp *Compiler) addConstant(ob object.Object) int {
 //
 // Returns the starting position of the just emitted(added to memory) instruction.
 func (cmp *Compiler) emit(op code.Opcode, operands ...int) int {
-	ins := code.Make(op, operands...)
+	ins := code.MakeInstruction(op, operands...)
 	pos := cmp.addInstruction(ins)
 	return pos
 }

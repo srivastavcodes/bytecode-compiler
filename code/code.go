@@ -15,6 +15,9 @@ const (
 	OpDiv
 	OpTrue
 	OpFalse
+	OpEqual
+	OpNotEqual
+	OpGreaterThan
 )
 
 type Instructions []byte
@@ -26,15 +29,20 @@ type Definition struct {
 	OperandWidth []int
 }
 
+var zero []int
+
 var definitions = map[Opcode]*Definition{
-	OpConstant: {"OpConstant", []int{2}},
-	OpPop:      {"OpPop", []int{}},
-	OpAdd:      {"OpAdd", []int{}},
-	OpSub:      {"OpAdd", []int{}},
-	OpMul:      {"OpAdd", []int{}},
-	OpDiv:      {"OpAdd", []int{}},
-	OpTrue:     {"OpTrue", []int{}},
-	OpFalse:    {"OpFalse", []int{}},
+	OpConstant:    {"OpConstant", []int{2}},
+	OpPop:         {"OpPop", zero},
+	OpAdd:         {"OpAdd", zero},
+	OpSub:         {"OpAdd", zero},
+	OpMul:         {"OpAdd", zero},
+	OpDiv:         {"OpAdd", zero},
+	OpTrue:        {"OpTrue", zero},
+	OpFalse:       {"OpFalse", zero},
+	OpEqual:       {"OpEqual", zero},
+	OpNotEqual:    {"OpNotEqual", zero},
+	OpGreaterThan: {"OpGreaterThan", zero},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -45,11 +53,11 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
-// Make Returns a byte slice with the opcode as first byte followed by operands encoded
+// MakeInstruction Returns a byte slice with the opcode as first byte followed by operands encoded
 // in big-endian format according to their defined widths.
 //
-// Example: Make(OpConstant, 65534) returns [OpConstant, 0xFF, 0xFE]
-func Make(op Opcode, operands ...int) []byte {
+// Example: MakeInstruction(OpConstant, 65534) returns [OpConstant, 0xFF, 0xFE]
+func MakeInstruction(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
 	if !ok {
 		return []byte{}

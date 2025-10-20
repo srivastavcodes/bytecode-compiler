@@ -67,6 +67,11 @@ func (vm *VM) RunVM() error {
 			if err != nil {
 				return err
 			}
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+			err := vm.executeComparison(operation)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -76,16 +81,13 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	var (
 		right = vm.pop()
 		left  = vm.pop()
-
-		leftType  = left.Type()
-		rightType = right.Type()
 	)
-	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
 		return vm.executeBinaryIntegerOperation(op, left, right)
 	}
 	return fmt.Errorf(
 		"invalid types for binary operation: %s %s",
-		leftType, rightType,
+		left.Type(), right.Type(),
 	)
 }
 
@@ -108,6 +110,52 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 		return fmt.Errorf("invalid interger operation: %d", op)
 	}
 	return vm.push(&object.Integer{Value: result})
+}
+
+func (vm *VM) executeComparison(op code.Opcode) error {
+	var (
+		right = vm.pop()
+		left  = vm.pop()
+	)
+	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+		return vm.executeIntegerComparison(op, left, right)
+	}
+	switch op {
+	case code.OpEqual:
+		return vm.push(boolNativeToBoolObject(right == left))
+	case code.OpNotEqual:
+		return vm.push(boolNativeToBoolObject(right != left))
+	default:
+		return fmt.Errorf(
+			"invalid operator: %d (%s %s)",
+			op, left.Type(), right.Type(),
+		)
+	}
+}
+
+func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object) error {
+	var (
+		leftVal  = left.(*object.Integer).Value
+		rightVal = right.(*object.Integer).Value
+	)
+	switch op {
+	case code.OpGreaterThan:
+		return vm.push(boolNativeToBoolObject(leftVal > rightVal))
+	case code.OpEqual:
+		return vm.push(boolNativeToBoolObject(leftVal == rightVal))
+	case code.OpNotEqual:
+		return vm.push(boolNativeToBoolObject(leftVal != rightVal))
+	default:
+		return fmt.Errorf("invalid operator: %d", op)
+	}
+}
+
+func boolNativeToBoolObject(input bool) *object.Boolean {
+	if input {
+		return True
+	} else {
+		return False
+	}
 }
 
 func (vm *VM) pop() object.Object {

@@ -12,7 +12,7 @@ func TestMake(t *testing.T) {
 		{OpAdd, []int{}, []byte{byte(OpAdd)}},
 	}
 	for _, tt := range tests {
-		instruction := Make(tt.op, tt.operands...)
+		instruction := MakeInstruction(tt.op, tt.operands...)
 
 		if len(instruction) != len(tt.expected) {
 			t.Errorf("instruction has wrong length: "+
@@ -28,9 +28,9 @@ func TestMake(t *testing.T) {
 
 func TestInstructionsString(t *testing.T) {
 	instructions := []Instructions{
-		Make(OpAdd),
-		Make(OpConstant, 2),
-		Make(OpConstant, 65535),
+		MakeInstruction(OpAdd),
+		MakeInstruction(OpConstant, 2),
+		MakeInstruction(OpConstant, 65535),
 	}
 	expected := `0000 OpAdd
 0001 OpConstant 2
@@ -55,7 +55,7 @@ func TestReadOperands(t *testing.T) {
 		{OpConstant, []int{65535}, 2},
 	}
 	for _, tt := range tests {
-		instruction := Make(tt.op, tt.operands...)
+		instruction := MakeInstruction(tt.op, tt.operands...)
 
 		def, err := Lookup(byte(tt.op))
 		if err != nil {
