@@ -37,6 +37,19 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		cmp.emit(code.OpPop)
+	case *ast.PrefixExpression:
+		err := cmp.Compile(node.Right)
+		if err != nil {
+			return err
+		}
+		switch node.Operator {
+		case "-":
+			cmp.emit(code.OpMinus)
+		case "!":
+			cmp.emit(code.OpBang)
+		default:
+			return fmt.Errorf("invalid operation: %s", node.Operator)
+		}
 	case *ast.InfixExpression:
 		switch {
 		case node.Operator == "<":
