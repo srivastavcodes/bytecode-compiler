@@ -41,19 +41,16 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
-
 		err = cmp.Compile(node.Right)
 		if err != nil {
 			return err
 		}
-
 		switch node.Operator {
 		case "+":
 			cmp.emit(code.OpAdd)
 		default:
 			return fmt.Errorf("unknown operator %s", node.Operator)
 		}
-
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		cmp.emit(code.OpConstant, cmp.addConstant(integer))
