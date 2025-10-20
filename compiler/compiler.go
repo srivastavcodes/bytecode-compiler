@@ -49,6 +49,12 @@ func (cmp *Compiler) Compile(node ast.Node) error {
 		switch node.Operator {
 		case "+":
 			cmp.emit(code.OpAdd)
+		case "-":
+			cmp.emit(code.OpSub)
+		case "*":
+			cmp.emit(code.OpMul)
+		case "/":
+			cmp.emit(code.OpDiv)
 		default:
 			return fmt.Errorf("unknown operator %s", node.Operator)
 		}

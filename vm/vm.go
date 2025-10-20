@@ -6,6 +6,7 @@ import (
 	"comp/object"
 	"encoding/binary"
 	"errors"
+	"fmt"
 )
 
 const StackSize = 2048
@@ -33,9 +34,11 @@ func (vm *VM) LastPoppedStackElement() object.Object {
 
 func (vm *VM) RunVM() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
-		op := code.Opcode(vm.instructions[ip])
+		operation := code.Opcode(vm.instructions[ip])
 
-		switch op {
+		switch operation {
+		case code.OpPop:
+			vm.pop()
 		case code.OpConstant:
 			constIndex := binary.BigEndian.Uint16(vm.instructions[ip+1:])
 			ip += 2
@@ -44,20 +47,52 @@ func (vm *VM) RunVM() error {
 			if err != nil {
 				return err
 			}
-		case code.OpAdd:
-			rt := vm.pop()
-			lt := vm.pop()
-
-			rtVal := rt.(*object.Integer).Value
-			ltVal := lt.(*object.Integer).Value
-
-			result := rtVal + ltVal
-			_ = vm.push(&object.Integer{Value: result})
-		case code.OpPop:
-			vm.pop()
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			err := vm.executeBinaryOperation(operation)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+func (vm *VM) executeBinaryOperation(op code.Opcode) error {
+	var (
+		right = vm.pop()
+		left  = vm.pop()
+
+		leftType  = left.Type()
+		rightType = right.Type()
+	)
+	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+		return vm.executeBinaryIntegerOperation(op, left, right)
+	}
+	return fmt.Errorf(
+		"invalid types for binary operation: %s %s",
+		leftType, rightType,
+	)
+}
+
+func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.Object) error {
+	var (
+		leftVal  = left.(*object.Integer).Value
+		rightVal = right.(*object.Integer).Value
+	)
+	var result int64
+	switch op {
+	case code.OpAdd:
+		result = leftVal + rightVal
+	case code.OpSub:
+		result = leftVal - rightVal
+	case code.OpMul:
+		result = leftVal * rightVal
+	case code.OpDiv:
+		result = leftVal / rightVal
+	default:
+		return fmt.Errorf("invalid interger operation: %d", op)
+	}
+	return vm.push(&object.Integer{Value: result})
 }
 
 func (vm *VM) pop() object.Object {
