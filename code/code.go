@@ -20,6 +20,8 @@ const (
 	OpGreaterThan
 	OpMinus
 	OpBang
+	OpJumpNotTruthy
+	OpJump
 )
 
 type Instructions []byte
@@ -34,19 +36,21 @@ type Definition struct {
 var zero []int
 
 var definitions = map[Opcode]*Definition{
-	OpConstant:    {"OpConstant", []int{2}},
-	OpPop:         {"OpPop", zero},
-	OpAdd:         {"OpAdd", zero},
-	OpSub:         {"OpAdd", zero},
-	OpMul:         {"OpAdd", zero},
-	OpDiv:         {"OpAdd", zero},
-	OpTrue:        {"OpTrue", zero},
-	OpFalse:       {"OpFalse", zero},
-	OpEqual:       {"OpEqual", zero},
-	OpNotEqual:    {"OpNotEqual", zero},
-	OpGreaterThan: {"OpGreaterThan", zero},
-	OpMinus:       {"OpMinus", zero},
-	OpBang:        {"OpBang", zero},
+	OpConstant:      {"OpConstant", []int{2}},
+	OpPop:           {"OpPop", zero},
+	OpAdd:           {"OpAdd", zero},
+	OpSub:           {"OpAdd", zero},
+	OpMul:           {"OpAdd", zero},
+	OpDiv:           {"OpAdd", zero},
+	OpTrue:          {"OpTrue", zero},
+	OpFalse:         {"OpFalse", zero},
+	OpEqual:         {"OpEqual", zero},
+	OpNotEqual:      {"OpNotEqual", zero},
+	OpGreaterThan:   {"OpGreaterThan", zero},
+	OpMinus:         {"OpMinus", zero},
+	OpBang:          {"OpBang", zero},
+	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
+	OpJump:          {"OpJump", []int{2}},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -93,6 +97,7 @@ func (ins Instructions) String() string {
 		def, err := Lookup(ins[i])
 		if err != nil {
 			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			i++
 			continue
 		}
 		operands, read := ReadOperands(def, ins[i+1:])
@@ -108,8 +113,10 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	operandCount := len(def.OperandWidth)
 
 	if len(operands) != operandCount {
-		return fmt.Sprintf("ERROR: "+
-			"operand len %d does not match defined %d\n", len(operands), operandCount)
+		return fmt.Sprintf(
+			"ERROR: operand len %d does not match defined %d\n",
+			len(operands), operandCount,
+		)
 	}
 	switch operandCount {
 	case 0:
