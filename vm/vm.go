@@ -146,6 +146,8 @@ func (vm *VM) executeBangOperator() error {
 		return vm.push(False)
 	case False:
 		return vm.push(True)
+	case Null:
+		return vm.push(True)
 	default:
 		return vm.push(False)
 	}
@@ -206,6 +208,8 @@ func isTruthy(condition object.Object) bool {
 	switch ob := condition.(type) {
 	case *object.Boolean:
 		return ob.Value
+	case *object.Null:
+		return false
 	default:
 		return true
 	}
