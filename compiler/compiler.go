@@ -118,15 +118,14 @@ func (cmp *Compiler) replaceInstruction(pos int, instruction []byte) {
 // handleJump handles jump operations over conditionals depending on resulting
 // truthy value or lack thereof.
 func (cmp *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) error {
+	posJump := cmp.emit(code.OpJump, 1000)
+
+	posAfterConsequence := len(cmp.instructions)
+	cmp.changeOperand(posJumpNotTruthy, posAfterConsequence)
+
 	if node.Alternative == nil {
-		posAfterConsequence := len(cmp.instructions)
-		cmp.changeOperand(posJumpNotTruthy, posAfterConsequence)
+		cmp.emit(code.OpNull)
 	} else {
-		posJump := cmp.emit(code.OpJump, 1000)
-
-		posAfterConsequence := len(cmp.instructions)
-		cmp.changeOperand(posJumpNotTruthy, posAfterConsequence)
-
 		err := cmp.Compile(node.Alternative)
 		if err != nil {
 			return err
@@ -134,9 +133,9 @@ func (cmp *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) er
 		if cmp.lastInstructionIsPop() {
 			cmp.removeLastPop()
 		}
-		posAfterAlternative := len(cmp.instructions)
-		cmp.changeOperand(posJump, posAfterAlternative)
 	}
+	posAfterAlternative := len(cmp.instructions)
+	cmp.changeOperand(posJump, posAfterAlternative)
 	return nil
 }
 
@@ -230,10 +229,10 @@ func (cmp *Compiler) emitInfixOp(infixExpr *ast.InfixExpression) error {
 		cmp.emit(code.OpMul)
 	case "/":
 		cmp.emit(code.OpDiv)
-	case "==":
-		cmp.emit(code.OpEqual)
 	case "!=":
 		cmp.emit(code.OpNotEqual)
+	case "==":
+		cmp.emit(code.OpEqual)
 	case ">":
 		cmp.emit(code.OpGreaterThan)
 	default:

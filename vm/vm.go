@@ -12,6 +12,7 @@ import (
 var (
 	True  = &object.Boolean{Value: true}
 	False = &object.Boolean{Value: false}
+	Null  = &object.Null{}
 )
 
 const StackSize = 2048
@@ -67,6 +68,16 @@ func (vm *VM) RunVM() error {
 			if err != nil {
 				return err
 			}
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip = pos - 1
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			condition := vm.pop()
+			if !isTruthy(condition) {
+				ip = pos - 1
+			}
 		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
 			err := vm.executeBinaryOperation(operation)
 			if err != nil {
@@ -79,6 +90,11 @@ func (vm *VM) RunVM() error {
 			}
 		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
 			err := vm.executeComparison(operation)
+			if err != nil {
+				return err
+			}
+		case code.OpNull:
+			err := vm.push(Null)
 			if err != nil {
 				return err
 			}
@@ -183,6 +199,15 @@ func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object
 		return vm.push(boolNativeToBoolObject(leftVal != rightVal))
 	default:
 		return fmt.Errorf("invalid operator: %d", op)
+	}
+}
+
+func isTruthy(condition object.Object) bool {
+	switch ob := condition.(type) {
+	case *object.Boolean:
+		return ob.Value
+	default:
+		return true
 	}
 }
 

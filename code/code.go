@@ -22,6 +22,7 @@ const (
 	OpBang
 	OpJumpNotTruthy
 	OpJump
+	OpNull
 )
 
 type Instructions []byte
@@ -51,6 +52,7 @@ var definitions = map[Opcode]*Definition{
 	OpBang:          {"OpBang", zero},
 	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
+	OpNull:          {"OpNull", zero},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -139,9 +141,13 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	for i, width := range def.OperandWidth {
 		switch width {
 		case 2:
-			operands[i] = int(binary.BigEndian.Uint16(ins[offset:]))
+			operands[i] = int(ReadUint16(ins[offset:]))
 		}
 		offset += width
 	}
 	return operands, offset
+}
+
+func ReadUint16(ins Instructions) uint16 {
+	return binary.BigEndian.Uint16(ins)
 }
