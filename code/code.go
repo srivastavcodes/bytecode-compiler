@@ -152,6 +152,8 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	return operands, offset
 }
 
+// ReadUint16 reads two consecutive bytes from the given Instructions
+// and converts them back to an uint16 using big-endian byte order.
 func ReadUint16(ins Instructions) uint16 {
 	return binary.BigEndian.Uint16(ins)
 }

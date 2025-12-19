@@ -20,6 +20,11 @@ func Start(input io.Reader, output io.Writer) {
 	scanner := bufio.NewScanner(input)
 	// env := object.NewEnvironment()
 
+	var (
+		constants   []object.Object
+		globals     = make([]object.Object, vm.GlobalsSize)
+		symbolTable = compiler.NewSymbolTable()
+	)
 	for {
 		fmt.Print(PROMPT)
 		ok := scanner.Scan()
@@ -42,31 +47,34 @@ func Start(input io.Reader, output io.Writer) {
 					_, _ = io.WriteString(output, "\n")
 				}
 		*/
-		cmp := compiler.NewCompiler()
+		cmp := compiler.NewWithState(symbolTable, constants)
 		err := cmp.Compile(root)
 		if err != nil {
-			fmt.Fprintf(output, "Compilation failed:\n %s\n", err)
+			_, _ = fmt.Fprintf(output, "Compilation failed:\n %s\n", err)
 			continue
 		}
-		vrm := vm.NewVM(cmp.ByteCode())
+		bytecode := cmp.ByteCode()
+		constants = bytecode.Constants
+
+		vrm := vm.NewVMWithGlobalsStore(bytecode, globals)
 
 		err = vrm.RunVM()
 		if err != nil {
-			fmt.Fprintf(output, "Executing bytecode failed:\n %s\n", err)
+			_, _ = fmt.Fprintf(output, "Executing bytecode failed:\n %s\n", err)
 			continue
 		}
 		stackTop := vrm.LastPoppedStackElement()
 
-		io.WriteString(output, stackTop.Inspect())
-		io.WriteString(output, "\n")
+		_, _ = io.WriteString(output, stackTop.Inspect())
+		_, _ = io.WriteString(output, "\n")
 	}
 }
 
 func printParserErrors(output io.Writer, errors []string) {
 	errMsg := fmt.Sprintf("%sParser ERROR::%s\n", object.COLOR_RED, object.COLOR_RESET)
-	io.WriteString(output, errMsg)
+	_, _ = io.WriteString(output, errMsg)
 
 	for _, err := range errors {
-		io.WriteString(output, "\t"+err+"\n")
+		_, _ = io.WriteString(output, "\t"+err+"\n")
 	}
 }

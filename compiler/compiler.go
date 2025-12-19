@@ -20,6 +20,22 @@ type Compiler struct {
 	symbolTable         *SymbolTable
 }
 
+// NewWithState creates a new Compiler instance initialized with the existing state.
+// This is useful for resuming compilation or reusing the compiler state across
+// multiple compilation passes.
+//
+// Returns a pointer to a newly created Compiler with the provided state injected.
+func NewWithState(sym *SymbolTable, consts []object.Object) *Compiler {
+	compiler := NewCompiler()
+	compiler.symbolTable = sym
+	compiler.constants = consts
+	return compiler
+}
+
+// NewCompiler creates and returns a new Compiler instance with an empty / default state.
+// This is the standard entry point for starting a new compilation process from scratch.
+//
+// Returns a pointer to the newly created Compiler instance.
 func NewCompiler() *Compiler {
 	return &Compiler{
 		instructions:        code.Instructions{},
