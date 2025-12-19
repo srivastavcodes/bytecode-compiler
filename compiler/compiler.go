@@ -30,7 +30,7 @@ func NewCompiler() *Compiler {
 
 // Compile walks the AST recursively until it encounters a node that can be compiled/evaluated.
 //
-// works similar to the Evaluate function
+// Works similar to the Evaluate function
 func (cmp *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.RootStatement:

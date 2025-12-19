@@ -63,8 +63,8 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
-// MakeInstruction Returns a byte slice with the opcode as first byte followed by operands encoded
-// in big-endian format according to their defined widths.
+// MakeInstruction Returns a byte slice with the opcode as the first byte followed
+// by operands encoded in big-endian format according to their defined widths.
 //
 // Example: MakeInstruction(OpConstant, 65534) returns [OpConstant, 0xFF, 0xFE]
 func MakeInstruction(op Opcode, operands ...int) []byte {
@@ -98,14 +98,14 @@ func (ins Instructions) String() string {
 	for i := 0; i < len(ins); {
 		def, err := Lookup(ins[i])
 		if err != nil {
-			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			_, _ = fmt.Fprintf(&out, "ERROR: %s\n", err)
 			i++
 			continue
 		}
 		operands, read := ReadOperands(def, ins[i+1:])
 		str := ins.fmtInstruction(def, operands)
 
-		fmt.Fprintf(&out, "%04d %s\n", i, str)
+		_, _ = fmt.Fprintf(&out, "%04d %s\n", i, str)
 		i += 1 + read
 	}
 	return out.String()

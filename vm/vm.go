@@ -218,9 +218,8 @@ func isTruthy(condition object.Object) bool {
 func boolNativeToBoolObject(input bool) *object.Boolean {
 	if input {
 		return True
-	} else {
-		return False
 	}
+	return False
 }
 
 func (vm *VM) pop() object.Object {
