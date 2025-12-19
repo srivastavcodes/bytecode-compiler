@@ -221,7 +221,7 @@ func TestConditionals(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
-/*func TestGlobalLetStatements(t *testing.T) {
+func TestGlobalLetStatements(t *testing.T) {
 	tests := []compilerTestCase{
 		{
 			input: `
@@ -266,9 +266,8 @@ func TestConditionals(t *testing.T) {
 			},
 		},
 	}
-
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestStringExpressions(t *testing.T) {
 	tests := []compilerTestCase{

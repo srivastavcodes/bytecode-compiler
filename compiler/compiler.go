@@ -17,6 +17,7 @@ type Compiler struct {
 	constants           []object.Object
 	lastInstruction     EmittedInstruction
 	previousInstruction EmittedInstruction
+	symbolTable         *SymbolTable
 }
 
 func NewCompiler() *Compiler {
@@ -25,192 +26,206 @@ func NewCompiler() *Compiler {
 		constants:           []object.Object{},
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
+		symbolTable:         NewSymbolTable(),
 	}
 }
 
 // Compile walks the AST recursively until it encounters a node that can be compiled/evaluated.
 //
 // Works similar to the Evaluate function
-func (cmp *Compiler) Compile(node ast.Node) error {
+func (c *Compiler) Compile(node ast.Node) error {
 	switch node := node.(type) {
 	case *ast.RootStatement:
 		for _, stmt := range node.Statements {
-			err := cmp.Compile(stmt)
+			err := c.Compile(stmt)
 			if err != nil {
 				return err
 			}
 		}
-	case *ast.ExpressionStatement:
-		err := cmp.Compile(node.Expression)
+	case *ast.LetStatement:
+		err := c.Compile(node.Value)
 		if err != nil {
 			return err
 		}
-		cmp.emit(code.OpPop)
+		symbol := c.symbolTable.Define(node.Name.Value)
+		c.emit(code.OpSetGlobal, symbol.Index)
+	case *ast.Identifier:
+		symbol, ok := c.symbolTable.Resolve(node.Value)
+		if !ok {
+			return fmt.Errorf("undefined variable: %s", node.Value)
+		}
+		c.emit(code.OpGetGlobal, symbol.Index)
+	case *ast.ExpressionStatement:
+		err := c.Compile(node.Expression)
+		if err != nil {
+			return err
+		}
+		c.emit(code.OpPop)
 	case *ast.BlockStatement:
 		for _, stmt := range node.Statements {
-			err := cmp.Compile(stmt)
+			err := c.Compile(stmt)
 			if err != nil {
 				return err
 			}
 		}
 	case *ast.PrefixExpression:
-		err := cmp.Compile(node.Right)
+		err := c.Compile(node.Right)
 		if err != nil {
 			return err
 		}
 		switch node.Operator {
 		case "-":
-			cmp.emit(code.OpMinus)
+			c.emit(code.OpMinus)
 		case "!":
-			cmp.emit(code.OpBang)
+			c.emit(code.OpBang)
 		default:
 			return fmt.Errorf("invalid operation: %s", node.Operator)
 		}
 	case *ast.InfixExpression:
-		err := cmp.compileInfix(node)
+		err := c.compileInfix(node)
 		if err != nil {
 			return err
 		}
 	case *ast.IfExpression:
-		err := cmp.Compile(node.Condition)
+		err := c.Compile(node.Condition)
 		if err != nil {
 			return err
 		}
-		posJumpNotTruthy := cmp.emit(code.OpJumpNotTruthy, 1000)
+		posJumpNotTruthy := c.emit(code.OpJumpNotTruthy, 1000)
 
-		err = cmp.Compile(node.Consequence)
+		err = c.Compile(node.Consequence)
 		if err != nil {
 			return err
 		}
-		if cmp.lastInstructionIsPop() {
-			cmp.removeLastPop()
+		if c.lastInstructionIsPop() {
+			c.removeLastPop()
 		}
-		return cmp.handleJump(node, posJumpNotTruthy)
+		return c.handleJump(node, posJumpNotTruthy)
 	case *ast.Boolean:
 		if !node.Value {
-			cmp.emit(code.OpFalse)
+			c.emit(code.OpFalse)
 		} else {
-			cmp.emit(code.OpTrue)
+			c.emit(code.OpTrue)
 		}
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
-		cmp.emit(code.OpConstant, cmp.addConstant(integer))
+		c.emit(code.OpConstant, c.addConstant(integer))
 	}
 	return nil
 }
 
 // changeOperand creates the instruction for the given operand and swaps the old
 // instruction for the new one - including the operand.
-func (cmp *Compiler) changeOperand(pos int, operand int) {
-	op := code.Opcode(cmp.instructions[pos])
+func (c *Compiler) changeOperand(pos int, operand int) {
+	op := code.Opcode(c.instructions[pos])
 	ins := code.MakeInstruction(op, operand)
-	cmp.replaceInstruction(pos, ins)
+	c.replaceInstruction(pos, ins)
 }
 
 // replaceInstruction replaces an instruction at (pos)[position:] with the
 // provided instruction
-func (cmp *Compiler) replaceInstruction(pos int, instruction []byte) {
+func (c *Compiler) replaceInstruction(pos int, instruction []byte) {
 	for i := 0; i < len(instruction); i++ {
-		cmp.instructions[pos+i] = instruction[i]
+		c.instructions[pos+i] = instruction[i]
 	}
 }
 
 // handleJump handles jump operations over conditionals depending on resulting
 // truthy value or lack thereof.
-func (cmp *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) error {
-	posJump := cmp.emit(code.OpJump, 1000)
+func (c *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) error {
+	posJump := c.emit(code.OpJump, 1000)
 
-	posAfterConsequence := len(cmp.instructions)
-	cmp.changeOperand(posJumpNotTruthy, posAfterConsequence)
+	posAfterConsequence := len(c.instructions)
+	c.changeOperand(posJumpNotTruthy, posAfterConsequence)
 
 	if node.Alternative == nil {
-		cmp.emit(code.OpNull)
+		c.emit(code.OpNull)
 	} else {
-		err := cmp.Compile(node.Alternative)
+		err := c.Compile(node.Alternative)
 		if err != nil {
 			return err
 		}
-		if cmp.lastInstructionIsPop() {
-			cmp.removeLastPop()
+		if c.lastInstructionIsPop() {
+			c.removeLastPop()
 		}
 	}
-	posAfterAlternative := len(cmp.instructions)
-	cmp.changeOperand(posJump, posAfterAlternative)
+	posAfterAlternative := len(c.instructions)
+	c.changeOperand(posJump, posAfterAlternative)
 	return nil
 }
 
 // addConstant appends ob to the compiler's constant slice.
 //
 // Returns the index of the constant in the constant pool as its very own identifier
-func (cmp *Compiler) addConstant(ob object.Object) int {
-	cmp.constants = append(cmp.constants, ob)
-	return len(cmp.constants) - 1
+func (c *Compiler) addConstant(ob object.Object) int {
+	c.constants = append(c.constants, ob)
+	return len(c.constants) - 1
 }
 
 // emit generates an instruction and adds it to a collection in memory.
 //
 // Returns the starting position of the just emitted(added to memory) instruction.
-func (cmp *Compiler) emit(op code.Opcode, operands ...int) int {
+func (c *Compiler) emit(op code.Opcode, operands ...int) int {
 	ins := code.MakeInstruction(op, operands...)
-	pos := cmp.addInstruction(ins)
-	cmp.setLastInstruction(op, pos)
+	pos := c.addInstruction(ins)
+	c.setLastInstruction(op, pos)
 	return pos
 }
 
-func (cmp *Compiler) setLastInstruction(op code.Opcode, pos int) {
-	cmp.previousInstruction = cmp.lastInstruction
+func (c *Compiler) setLastInstruction(op code.Opcode, pos int) {
+	c.previousInstruction = c.lastInstruction
 	last := EmittedInstruction{
 		OpCode:   op,
 		Position: pos,
 	}
-	cmp.lastInstruction = last
+	c.lastInstruction = last
 }
 
 // addInstruction adds the given (ins) instruction and stores the len of
 // already present instruction and returns the same as that will be the
 // instruction's offset
-func (cmp *Compiler) addInstruction(ins []byte) int {
-	posNewIns := len(cmp.instructions)
-	cmp.instructions = append(cmp.instructions, ins...)
+func (c *Compiler) addInstruction(ins []byte) int {
+	posNewIns := len(c.instructions)
+	c.instructions = append(c.instructions, ins...)
 	return posNewIns
 }
 
 // is pop?
-func (cmp *Compiler) lastInstructionIsPop() bool {
-	return cmp.lastInstruction.OpCode == code.OpPop
+func (c *Compiler) lastInstructionIsPop() bool {
+	return c.lastInstruction.OpCode == code.OpPop
 }
 
 // removeLastPop removes the last instruction from the instructions
 // slice and updates the lastInstruction field
-func (cmp *Compiler) removeLastPop() {
-	cmp.instructions = cmp.instructions[:cmp.lastInstruction.Position]
-	cmp.lastInstruction = cmp.previousInstruction
+func (c *Compiler) removeLastPop() {
+	c.instructions = c.instructions[:c.lastInstruction.Position]
+	c.lastInstruction = c.previousInstruction
 }
 
 // compileInfix performs the same recursive compilation that Compile does.
-func (cmp *Compiler) compileInfix(node *ast.InfixExpression) error {
+func (c *Compiler) compileInfix(node *ast.InfixExpression) error {
 	switch {
 	case node.Operator == "<":
-		err := cmp.Compile(node.Right)
+		err := c.Compile(node.Right)
 		if err != nil {
 			return err
 		}
-		err = cmp.Compile(node.Left)
+		err = c.Compile(node.Left)
 		if err != nil {
 			return err
 		}
-		cmp.emit(code.OpGreaterThan)
+		c.emit(code.OpGreaterThan)
 		return nil
 	default:
-		err := cmp.Compile(node.Left)
+		err := c.Compile(node.Left)
 		if err != nil {
 			return err
 		}
-		err = cmp.Compile(node.Right)
+		err = c.Compile(node.Right)
 		if err != nil {
 			return err
 		}
-		err = cmp.emitInfixOp(node)
+		err = c.emitInfixOp(node)
 		if err != nil {
 			return err
 		}
@@ -219,22 +234,22 @@ func (cmp *Compiler) compileInfix(node *ast.InfixExpression) error {
 }
 
 // emitInfixOp emits the corresponding code.Opcode for each infix operator
-func (cmp *Compiler) emitInfixOp(infixExpr *ast.InfixExpression) error {
+func (c *Compiler) emitInfixOp(infixExpr *ast.InfixExpression) error {
 	switch infixExpr.Operator {
 	case "+":
-		cmp.emit(code.OpAdd)
+		c.emit(code.OpAdd)
 	case "-":
-		cmp.emit(code.OpSub)
+		c.emit(code.OpSub)
 	case "*":
-		cmp.emit(code.OpMul)
+		c.emit(code.OpMul)
 	case "/":
-		cmp.emit(code.OpDiv)
+		c.emit(code.OpDiv)
 	case "!=":
-		cmp.emit(code.OpNotEqual)
+		c.emit(code.OpNotEqual)
 	case "==":
-		cmp.emit(code.OpEqual)
+		c.emit(code.OpEqual)
 	case ">":
-		cmp.emit(code.OpGreaterThan)
+		c.emit(code.OpGreaterThan)
 	default:
 		return fmt.Errorf("unknown operator %s", infixExpr.Operator)
 	}
@@ -246,9 +261,9 @@ type ByteCode struct {
 	Constants    []object.Object
 }
 
-func (cmp *Compiler) ByteCode() *ByteCode {
+func (c *Compiler) ByteCode() *ByteCode {
 	return &ByteCode{
-		Instructions: cmp.instructions,
-		Constants:    cmp.constants,
+		Instructions: c.instructions,
+		Constants:    c.constants,
 	}
 }
