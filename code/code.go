@@ -100,18 +100,18 @@ func MakeInstruction(op Opcode, operands ...int) []byte {
 	return instruction
 }
 
-func (ins Instructions) String() string {
+func (in Instructions) String() string {
 	var out strings.Builder
 
-	for i := 0; i < len(ins); {
-		def, err := Lookup(ins[i])
+	for i := 0; i < len(in); {
+		def, err := Lookup(in[i])
 		if err != nil {
 			_, _ = fmt.Fprintf(&out, "ERROR: %s\n", err)
 			i++
 			continue
 		}
-		operands, read := ReadOperands(def, ins[i+1:])
-		str := ins.fmtInstruction(def, operands)
+		operands, read := ReadOperands(def, in[i+1:])
+		str := in.instructionFmt(def, operands)
 
 		_, _ = fmt.Fprintf(&out, "%04d %s\n", i, str)
 		i += 1 + read
@@ -119,7 +119,7 @@ func (ins Instructions) String() string {
 	return out.String()
 }
 
-func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
+func (in Instructions) instructionFmt(def *Definition, operands []int) string {
 	operandCount := len(def.OperandWidth)
 
 	if len(operands) != operandCount {
@@ -137,7 +137,7 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
 }
 
-// ReadOperands extracts operand values from bytecode instruction bytes.
+// ReadOperands extracts operand values from bytecode instructionFmt bytes.
 // Takes a definition specifying operand widths and returns the decoded operands
 // along with the total bytes consumed.
 //
