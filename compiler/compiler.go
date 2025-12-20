@@ -131,6 +131,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 		str := &object.String{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(str))
 
+	case *ast.HashLiteral:
+		err := c.compileHashLiteral(node)
+		if err != nil {
+			return err
+		}
 	case *ast.ArrayLiteral:
 		for _, elem := range node.Elements {
 			err := c.Compile(elem)
@@ -140,6 +145,30 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 		c.emit(code.OpArray, len(node.Elements))
 	}
+	return nil
+}
+
+func (c *Compiler) compileHashLiteral(node *ast.HashLiteral) error {
+	keys := make([]ast.Expression, 0, len(node.Pairs))
+
+	for key := range node.Pairs {
+		keys = append(keys, key)
+	}
+	// ordering necessary for testing
+	// slices.SortFunc(keys, func(a, b ast.Expression) int {
+	// 	return strings.Compare(a.String(), b.String())
+	// })
+	for _, key := range keys {
+		err := c.Compile(key)
+		if err != nil {
+			return err
+		}
+		err = c.Compile(node.Pairs[key])
+		if err != nil {
+			return err
+		}
+	}
+	c.emit(code.OpHash, len(node.Pairs)*2)
 	return nil
 }
 

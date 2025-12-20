@@ -136,11 +136,40 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(array); err != nil {
 				return err
 			}
+		case code.OpHash:
+			length := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			hash, err := vm.buildHash(vm.sp-length, vm.sp)
+			if err != nil {
+				return err
+			}
+			vm.sp = vm.sp - length
+			if err := vm.push(hash); err != nil {
+				return err
+			}
 		default:
-			panic(fmt.Sprintf("unknown operation %d", operation))
+			return fmt.Errorf("unknown operation: %d", operation)
 		}
 	}
 	return nil
+}
+
+func (vm *VM) buildHash(startIndex, endIndex int) (object.Object, error) {
+	pairs := make(map[object.HashKey]object.HashPair, (endIndex-startIndex)/2)
+
+	for i := startIndex; i < endIndex; i += 2 {
+		var (
+			key  = vm.stack[i]
+			val  = vm.stack[i+1]
+			pair = object.HashPair{Key: key, Value: val}
+		)
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return nil, fmt.Errorf("unusable as hash key: %s", key.Type())
+		}
+		pairs[hashKey.HashKey()] = pair
+	}
+	return &object.Hash{Pairs: pairs}, nil
 }
 
 // buildArray creates a new array object from a range of stack elements.
@@ -189,9 +218,12 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 	case code.OpMul:
 		result = lval * rval
 	case code.OpDiv:
+		if rval == 0 {
+			return fmt.Errorf("division by zero")
+		}
 		result = lval / rval
 	default:
-		return fmt.Errorf("invalid interger operation: %d", op)
+		return fmt.Errorf("invalid integer operation: %d", op)
 	}
 	return vm.push(&object.Integer{Value: result})
 }

@@ -26,6 +26,7 @@ const (
 	OpGetGlobal
 	OpSetGlobal
 	OpArray
+	OpHash
 )
 
 type Instructions []byte
@@ -43,9 +44,9 @@ var definitions = map[Opcode]*Definition{
 	OpConstant:      {"OpConstant", []int{2}},
 	OpPop:           {"OpPop", zero},
 	OpAdd:           {"OpAdd", zero},
-	OpSub:           {"OpAdd", zero},
-	OpMul:           {"OpAdd", zero},
-	OpDiv:           {"OpAdd", zero},
+	OpSub:           {"OpSub", zero},
+	OpMul:           {"OpMul", zero},
+	OpDiv:           {"OpDiv", zero},
 	OpTrue:          {"OpTrue", zero},
 	OpFalse:         {"OpFalse", zero},
 	OpEqual:         {"OpEqual", zero},
@@ -59,6 +60,7 @@ var definitions = map[Opcode]*Definition{
 	OpGetGlobal:     {"OpGetGlobal", []int{2}},
 	OpSetGlobal:     {"OpSetGlobal", []int{2}},
 	OpArray:         {"OpArray", []int{2}},
+	OpHash:          {"OpHash", []int{2}},
 }
 
 func Lookup(op byte) (*Definition, error) {

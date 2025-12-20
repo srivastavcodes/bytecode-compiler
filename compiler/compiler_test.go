@@ -335,7 +335,7 @@ func TestArrayLiterals(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
-/*func TestHashLiterals(t *testing.T) {
+func TestHashLiterals(t *testing.T) {
 	tests := []compilerTestCase{
 		{
 			input:             "{}",
@@ -376,9 +376,8 @@ func TestArrayLiterals(t *testing.T) {
 			},
 		},
 	}
-
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestIndexExpressions(t *testing.T) {
 	tests := []compilerTestCase{
