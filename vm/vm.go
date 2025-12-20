@@ -145,36 +145,51 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 		right = vm.pop()
 		left  = vm.pop()
 	)
-	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return vm.executeBinaryIntegerOperation(op, left, right)
+
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return vm.executeBinaryStringOperation(op, left, right)
+	default:
+		return fmt.Errorf("invalid types for binary operation: %s %s",
+			left.Type(), right.Type(),
+		)
 	}
-	return fmt.Errorf(
-		"invalid types for binary operation: %s %s",
-		left.Type(), right.Type(),
-	)
 }
 
 // executeBinaryIntegerOperation performs arithmetic operations (add, subtract, multiply, divide)
 // on two integer operands and pushes the result onto the stack.
 func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.Object) error {
 	var (
-		leftVal  = left.(*object.Integer).Value
-		rightVal = right.(*object.Integer).Value
+		lval = left.(*object.Integer).Value
+		rval = right.(*object.Integer).Value
 	)
 	var result int64
 	switch op {
 	case code.OpAdd:
-		result = leftVal + rightVal
+		result = lval + rval
 	case code.OpSub:
-		result = leftVal - rightVal
+		result = lval - rval
 	case code.OpMul:
-		result = leftVal * rightVal
+		result = lval * rval
 	case code.OpDiv:
-		result = leftVal / rightVal
+		result = lval / rval
 	default:
 		return fmt.Errorf("invalid interger operation: %d", op)
 	}
 	return vm.push(&object.Integer{Value: result})
+}
+
+func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Object) error {
+	if op != code.OpAdd {
+		return fmt.Errorf("invalid string operation: %d", op)
+	}
+	var (
+		lval = left.(*object.String).Value
+		rval = right.(*object.String).Value
+	)
+	return vm.push(&object.String{Value: lval + rval})
 }
 
 // executeBangOperator performs logical negation on the top stack element.
