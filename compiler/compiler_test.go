@@ -293,7 +293,7 @@ func TestStringExpressions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
-/*func TestArrayLiterals(t *testing.T) {
+func TestArrayLiterals(t *testing.T) {
 	tests := []compilerTestCase{
 		{
 			input:             "[]",
@@ -332,9 +332,8 @@ func TestStringExpressions(t *testing.T) {
 			},
 		},
 	}
-
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestHashLiterals(t *testing.T) {
 	tests := []compilerTestCase{

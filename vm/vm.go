@@ -70,19 +70,16 @@ func (vm *VM) RunVM() error {
 		case code.OpConstant:
 			constIndex := binary.BigEndian.Uint16(vm.instructions[ip+1:])
 			ip += 2
-
 			err := vm.push(vm.constants[constIndex])
 			if err != nil {
 				return err
 			}
 		case code.OpTrue:
-			err := vm.push(True)
-			if err != nil {
+			if err := vm.push(True); err != nil {
 				return err
 			}
 		case code.OpFalse:
-			err := vm.push(False)
-			if err != nil {
+			if err := vm.push(False); err != nil {
 				return err
 			}
 		case code.OpBang:
@@ -127,8 +124,16 @@ func (vm *VM) RunVM() error {
 				return err
 			}
 		case code.OpNull:
-			err := vm.push(Null)
-			if err != nil {
+			if err := vm.push(Null); err != nil {
+				return err
+			}
+		case code.OpArray:
+			length := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			array := vm.buildArray(vm.sp-length, vm.sp)
+
+			vm.sp = vm.sp - length
+			if err := vm.push(array); err != nil {
 				return err
 			}
 		default:
@@ -136,6 +141,16 @@ func (vm *VM) RunVM() error {
 		}
 	}
 	return nil
+}
+
+// buildArray creates a new array object from a range of stack elements.
+func (vm *VM) buildArray(startIndex, endIndex int) object.Object {
+	elements := make([]object.Object, endIndex-startIndex)
+
+	for i := startIndex; i < endIndex; i++ {
+		elements[i-startIndex] = vm.stack[i]
+	}
+	return &object.Array{Elements: elements}
 }
 
 // executeBinaryOperation performs binary arithmetic operations on the top two stack elements.
@@ -181,6 +196,7 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 	return vm.push(&object.Integer{Value: result})
 }
 
+// executeBinaryStringOperation concatenates two strings together.
 func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Object) error {
 	if op != code.OpAdd {
 		return fmt.Errorf("invalid string operation: %d", op)
