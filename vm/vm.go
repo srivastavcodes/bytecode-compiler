@@ -154,6 +154,7 @@ func (vm *VM) RunVM() error {
 	return nil
 }
 
+// buildHash creates a new hash object from a range of stack elements.
 func (vm *VM) buildHash(startIndex, endIndex int) (object.Object, error) {
 	pairs := make(map[object.HashKey]object.HashPair, (endIndex-startIndex)/2)
 
