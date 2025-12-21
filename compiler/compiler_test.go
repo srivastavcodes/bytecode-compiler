@@ -379,7 +379,7 @@ func TestHashLiterals(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
-/*func TestIndexExpressions(t *testing.T) {
+func TestIndexExpressions(t *testing.T) {
 	tests := []compilerTestCase{
 		{
 			input:             "[1, 2, 3][1 + 1]",
@@ -411,9 +411,8 @@ func TestHashLiterals(t *testing.T) {
 			},
 		},
 	}
-
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestFunctions(t *testing.T) {
 	tests := []compilerTestCase{

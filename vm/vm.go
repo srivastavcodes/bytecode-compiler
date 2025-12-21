@@ -147,6 +147,15 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(hash); err != nil {
 				return err
 			}
+		case code.OpIndex:
+			var (
+				index = vm.pop()
+				left  = vm.pop()
+			)
+			err := vm.executeIndexExpression(left, index)
+			if err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unknown operation: %d", operation)
 		}
@@ -183,8 +192,51 @@ func (vm *VM) buildArray(startIndex, endIndex int) object.Object {
 	return &object.Array{Elements: elements}
 }
 
-// executeBinaryOperation performs binary arithmetic operations on the top two stack elements.
-// Currently supports integer operations only.
+// executeIndexExpression performs an indexing operation on the provided object.
+func (vm *VM) executeIndexExpression(left, index object.Object) error {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return vm.executeArrayIndex(left, index)
+
+	case left.Type() == object.HASH_OBJ:
+		return vm.executeHashIndex(left, index)
+	default:
+		return fmt.Errorf("index operator not supported for type: %s", left.Type())
+	}
+}
+
+// executeArrayIndex performs sanity checks and pushes the element at the given
+// index or null on the top of the stack.
+func (vm *VM) executeArrayIndex(left, index object.Object) error {
+	var (
+		arrayOb = left.(*object.Array)
+		idx     = index.(*object.Integer).Value
+		maxIdx  = int64(len(arrayOb.Elements) - 1)
+	)
+	if idx < 0 || idx > maxIdx {
+		return vm.push(Null)
+	}
+	return vm.push(arrayOb.Elements[idx])
+}
+
+// executeHashIndex checks if the key is hashable and pushes the value for
+// the corresponding key if exists, or pushes Null.
+func (vm *VM) executeHashIndex(left, keyOb object.Object) error {
+	hashOb := left.(*object.Hash)
+
+	key, ok := keyOb.(object.Hashable)
+	if !ok {
+		return fmt.Errorf("unusable as hash key: %s", keyOb.Type())
+	}
+	pairs, ok := hashOb.Pairs[key.HashKey()]
+	if !ok {
+		return vm.push(Null)
+	}
+	return vm.push(pairs.Value)
+}
+
+// executeBinaryOperation performs binary arithmetic/concatenation operation on
+// the top two stack elements depending on the object type.
 func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	var (
 		right = vm.pop()

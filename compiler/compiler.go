@@ -46,6 +46,8 @@ func NewCompiler() *Compiler {
 	}
 }
 
+// TODO: improve error handling everywhere in the codebase.
+
 // Compile walks the AST recursively until it encounters a node that can be compiled/evaluated.
 //
 // Works similar to the Evaluate function
@@ -144,6 +146,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 		c.emit(code.OpArray, len(node.Elements))
+	case *ast.IndexExpression:
+		if err := c.Compile(node.Left); err != nil {
+			return err
+		}
+		if err := c.Compile(node.Index); err != nil {
+			return err
+		}
+		c.emit(code.OpIndex)
 	}
 	return nil
 }
