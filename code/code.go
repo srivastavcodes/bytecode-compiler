@@ -6,63 +6,6 @@ import (
 	"strings"
 )
 
-const (
-	OpConstant Opcode = iota
-	OpPop
-	OpAdd
-	OpSub
-	OpMul
-	OpDiv
-	OpTrue
-	OpFalse
-	OpEqual
-	OpNotEqual
-	OpGreaterThan
-	OpMinus
-	OpBang
-	OpJumpNotTruthy
-	OpJump
-	OpNull
-	OpGetGlobal
-	OpSetGlobal
-	OpArray
-	OpHash
-)
-
-type Instructions []byte
-
-type Opcode byte
-
-type Definition struct {
-	Name         string
-	OperandWidth []int
-}
-
-var zero []int
-
-var definitions = map[Opcode]*Definition{
-	OpConstant:      {"OpConstant", []int{2}},
-	OpPop:           {"OpPop", zero},
-	OpAdd:           {"OpAdd", zero},
-	OpSub:           {"OpSub", zero},
-	OpMul:           {"OpMul", zero},
-	OpDiv:           {"OpDiv", zero},
-	OpTrue:          {"OpTrue", zero},
-	OpFalse:         {"OpFalse", zero},
-	OpEqual:         {"OpEqual", zero},
-	OpNotEqual:      {"OpNotEqual", zero},
-	OpGreaterThan:   {"OpGreaterThan", zero},
-	OpMinus:         {"OpMinus", zero},
-	OpBang:          {"OpBang", zero},
-	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
-	OpJump:          {"OpJump", []int{2}},
-	OpNull:          {"OpNull", zero},
-	OpGetGlobal:     {"OpGetGlobal", []int{2}},
-	OpSetGlobal:     {"OpSetGlobal", []int{2}},
-	OpArray:         {"OpArray", []int{2}},
-	OpHash:          {"OpHash", []int{2}},
-}
-
 func Lookup(op byte) (*Definition, error) {
 	def, ok := definitions[Opcode(op)]
 	if !ok {
