@@ -157,8 +157,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpConstant, c.addConstant(str))
 
 	case *ast.HashLiteral:
-		err := c.compileHashLiteral(node)
-		if err != nil {
+		if err := c.compileHashLiteral(node); err != nil {
 			return err
 		}
 	case *ast.ArrayLiteral:
