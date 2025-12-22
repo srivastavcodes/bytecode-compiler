@@ -283,6 +283,8 @@ func (c *Compiler) emit(op code.Opcode, operands ...int) int {
 	return pos
 }
 
+// sets the given opCode as the lastInstruction and shifts the last
+// last-instruction to prevInstruction.
 func (c *Compiler) setLastInstruction(op code.Opcode, pos int) {
 	var (
 		prev = c.scopes[c.scopeIndex].lastInstruction
