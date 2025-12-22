@@ -379,11 +379,19 @@ func (c *Compiler) emitInfixOp(infixExpr *ast.InfixExpression) error {
 	return nil
 }
 
+// ByteCode represents the final compiled output of the compiler, containing
+// both the executable bytecode instructions and the constant pool. This structure
+// is passed to the virtual machine for execution.
+//
+// Instructions holds the sequential bytecode operations to be executed.
+// Constants holds the constant values (integers, strings, etc.) referenced by
+// OpConstant instructions via their index in this slice.
 type ByteCode struct {
 	Instructions code.Instructions
 	Constants    []object.Object
 }
 
+// ByteCode returns a pointer to ByteCode struct.
 func (c *Compiler) ByteCode() *ByteCode {
 	return &ByteCode{
 		Instructions: c.currentInstructions(),
