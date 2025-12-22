@@ -22,6 +22,9 @@ const (
 	OpArray
 	OpHash
 	OpIndex
+	OpCall
+	OpReturnValue
+	OpReturn
 )
 
 type Instructions []byte
@@ -57,4 +60,7 @@ var definitions = map[Opcode]*Definition{
 	OpArray:         {"OpArray", []int{2}},
 	OpHash:          {"OpHash", []int{2}},
 	OpIndex:         {"OpIndex", byte0},
+	OpCall:          {"OpCall", byte0},
+	OpReturnValue:   {"OpReturnValue", byte0},
+	OpReturn:        {"OpReturn", byte0},
 }
