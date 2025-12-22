@@ -433,40 +433,40 @@ func TestFunctions(t *testing.T) {
 				code.MakeInstruction(code.OpPop),
 			},
 		},
-		// {
-		// 	input: `fn() { 5 + 10 }`,
-		// 	expectedConstants: []interface{}{
-		// 		5,
-		// 		10,
-		// 		[]code.Instructions{
-		// 			code.MakeInstruction(code.OpConstant, 0),
-		// 			code.MakeInstruction(code.OpConstant, 1),
-		// 			code.MakeInstruction(code.OpAdd),
-		// 			code.MakeInstruction(code.OpReturnValue),
-		// 		},
-		// 	},
-		// 	expectedInstructions: []code.Instructions{
-		// 		code.MakeInstruction(code.OpClosure, 2, 0),
-		// 		code.MakeInstruction(code.OpPop),
-		// 	},
-		// },
-		// {
-		// 	input: `fn() { 1; 2 }`,
-		// 	expectedConstants: []interface{}{
-		// 		1,
-		// 		2,
-		// 		[]code.Instructions{
-		// 			code.MakeInstruction(code.OpConstant, 0),
-		// 			code.MakeInstruction(code.OpPop),
-		// 			code.MakeInstruction(code.OpConstant, 1),
-		// 			code.MakeInstruction(code.OpReturnValue),
-		// 		},
-		// 	},
-		// 	expectedInstructions: []code.Instructions{
-		// 		code.MakeInstruction(code.OpClosure, 2, 0),
-		// 		code.MakeInstruction(code.OpPop),
-		// 	},
-		// },
+		{
+			input: `func() { 5 + 10 }`,
+			expectedConstants: []interface{}{
+				5,
+				10,
+				[]code.Instructions{
+					code.MakeInstruction(code.OpConstant, 0),
+					code.MakeInstruction(code.OpConstant, 1),
+					code.MakeInstruction(code.OpAdd),
+					code.MakeInstruction(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.MakeInstruction(code.OpConstant, 2),
+				code.MakeInstruction(code.OpPop),
+			},
+		},
+		{
+			input: `func() { 1; 2 }`,
+			expectedConstants: []interface{}{
+				1,
+				2,
+				[]code.Instructions{
+					code.MakeInstruction(code.OpConstant, 0),
+					code.MakeInstruction(code.OpPop),
+					code.MakeInstruction(code.OpConstant, 1),
+					code.MakeInstruction(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.MakeInstruction(code.OpConstant, 2),
+				code.MakeInstruction(code.OpPop),
+			},
+		},
 	}
 	runCompilerTests(t, tests)
 }
@@ -525,24 +525,23 @@ func TestCompilerScopes(t *testing.T) {
 	}
 }
 
-/*func TestFunctionsWithoutReturnValue(t *testing.T) {
+func TestFunctionsWithoutReturnValue(t *testing.T) {
 	tests := []compilerTestCase{
 		{
-			input: `fn() { }`,
+			input: `func() { }`,
 			expectedConstants: []interface{}{
 				[]code.Instructions{
 					code.MakeInstruction(code.OpReturn),
 				},
 			},
 			expectedInstructions: []code.Instructions{
-				code.MakeInstruction(code.OpClosure, 0, 0),
+				code.MakeInstruction(code.OpConstant, 0),
 				code.MakeInstruction(code.OpPop),
 			},
 		},
 	}
-
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestFunctionCalls(t *testing.T) {
 	tests := []compilerTestCase{

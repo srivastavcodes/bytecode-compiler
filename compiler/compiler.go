@@ -103,6 +103,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err := c.Compile(node.Body); err != nil {
 			return err
 		}
+		if c.lastInstructionIs(code.OpPop) {
+			c.replaceLastPopWithReturn()
+		}
+		if !c.lastInstructionIs(code.OpReturnValue) {
+			c.emit(code.OpReturn)
+		}
 		var (
 			instructions = c.leaveScope()
 			compiledFunc = &object.CompiledFunction{Instructions: instructions}
@@ -138,7 +144,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err := c.Compile(node.Consequence); err != nil {
 			return err
 		}
-		if c.lastInstructionIsPop() {
+		if c.lastInstructionIs(code.OpPop) {
 			c.removeLastPop()
 		}
 		return c.handleJump(node, posJumpNotTruthy)
@@ -246,6 +252,14 @@ func (c *Compiler) replaceInstruction(pos int, newInstruction []byte) {
 	}
 }
 
+// does what it says.
+func (c *Compiler) replaceLastPopWithReturn() {
+	lastPos := c.scopes[c.scopeIndex].lastInstruction.Position
+	ins := code.MakeInstruction(code.OpReturnValue)
+	c.replaceInstruction(lastPos, ins)
+	c.scopes[c.scopeIndex].lastInstruction.OpCode = code.OpReturnValue
+}
+
 // handleJump handles jump operations over conditionals depending on resulting
 // truthy value or lack thereof.
 func (c *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) error {
@@ -261,7 +275,7 @@ func (c *Compiler) handleJump(node *ast.IfExpression, posJumpNotTruthy int) erro
 		if err != nil {
 			return err
 		}
-		if c.lastInstructionIsPop() {
+		if c.lastInstructionIs(code.OpPop) {
 			c.removeLastPop()
 		}
 	}
@@ -312,8 +326,11 @@ func (c *Compiler) addInstruction(ins []byte) int {
 }
 
 // is pop?
-func (c *Compiler) lastInstructionIsPop() bool {
-	return c.scopes[c.scopeIndex].lastInstruction.OpCode == code.OpPop
+func (c *Compiler) lastInstructionIs(op code.Opcode) bool {
+	if len(c.currentInstructions()) == 0 {
+		return false
+	}
+	return c.scopes[c.scopeIndex].lastInstruction.OpCode == op
 }
 
 // removeLastPop removes the last instruction from the instructions slice

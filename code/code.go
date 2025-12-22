@@ -14,10 +14,11 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
-// MakeInstruction Returns a byte slice with the opcode as the first byte followed
-// by operands encoded in big-endian format according to their defined widths.
+// MakeInstruction Returns a byte slice with the opcode as the first byte
+// followed by operands encoded in big-endian format according to their
+// defined widths.
 //
-// Example: MakeInstruction(OpConstant, 65534) returns [OpConstant, 0xFF, 0xFE]
+// Example: MakeInstruction(OpArray, 27) returns [18 0 27]
 func MakeInstruction(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
 	if !ok {
