@@ -119,6 +119,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpReturnValue)
+	case *ast.CallExpression:
+		if err := c.Compile(node.Function); err != nil {
+			return err
+		}
+		c.emit(code.OpCall)
 	case *ast.PrefixExpression:
 		if err := c.Compile(node.Right); err != nil {
 			return err
