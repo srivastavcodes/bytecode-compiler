@@ -99,15 +99,6 @@ func (vm *VM) RunVM() error {
 
 		operation = code.Opcode(ins[ip])
 		switch operation {
-		case code.OpPop:
-			vm.pop()
-		case code.OpConstant:
-			constIndex := code.ReadUint16(ins[ip+1:])
-			vm.currentFrame().ip += 2
-			err := vm.push(vm.constants[constIndex])
-			if err != nil {
-				return err
-			}
 		case code.OpTrue:
 			if err := vm.push(True); err != nil {
 				return err
@@ -121,9 +112,17 @@ func (vm *VM) RunVM() error {
 			if err != nil {
 				return err
 			}
+		case code.OpConstant:
+			constIndex := code.ReadUint16(ins[ip+1:])
+			vm.currentFrame().ip += 2
+			err := vm.push(vm.constants[constIndex])
+			if err != nil {
+				return err
+			}
 		case code.OpJump:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip = pos - 1
+
 		case code.OpJumpNotTruthy:
 			pos := int(code.ReadUint16(ins[ip+1:]))
 			vm.currentFrame().ip += 2
@@ -132,6 +131,8 @@ func (vm *VM) RunVM() error {
 			if !isTruthy(condition) {
 				vm.currentFrame().ip = pos - 1
 			}
+		case code.OpPop:
+			vm.pop()
 		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
 			err := vm.executeBinaryOperation(operation)
 			if err != nil {
@@ -151,6 +152,7 @@ func (vm *VM) RunVM() error {
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 			vm.globals[globalIndex] = vm.pop()
+
 		case code.OpGetGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
@@ -160,6 +162,30 @@ func (vm *VM) RunVM() error {
 			}
 		case code.OpNull:
 			if err := vm.push(Null); err != nil {
+				return err
+			}
+		case code.OpCall:
+			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function")
+			}
+			nf := NewFrame(fn)
+			vm.pushFrame(nf)
+
+		case code.OpReturnValue:
+			returnVal := vm.pop()
+			vm.popFrame()
+			vm.pop()
+			if err := vm.push(returnVal); err != nil {
+				return err
+			}
+		case code.OpIndex:
+			var (
+				index = vm.pop()
+				left  = vm.pop()
+			)
+			err := vm.executeIndexExpression(left, index)
+			if err != nil {
 				return err
 			}
 		case code.OpArray:
@@ -182,17 +208,6 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(hash); err != nil {
 				return err
 			}
-		case code.OpIndex:
-			var (
-				index = vm.pop()
-				left  = vm.pop()
-			)
-			err := vm.executeIndexExpression(left, index)
-			if err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("unknown operation: %d", operation)
 		}
 	}
 	return nil
