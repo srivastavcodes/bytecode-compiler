@@ -193,22 +193,22 @@ func TestCallingFunctionsWithoutArguments(t *testing.T) {
 			`,
 			expected: 99,
 		},
-		// {
-		// 	input: `
-		// 	let noReturn = fn() { };
-		// 	noReturn();
-		// 	`,
-		// 	expected: Null,
-		// },
-		// {
-		// 	input: `
-		// 	let noReturn = fn() { };
-		// 	let noReturnTwo = fn() { noReturn(); };
-		// 	noReturn();
-		// 	noReturnTwo();
-		// 	`,
-		// 	expected: Null,
-		// },
+		{
+			input: `
+			let noReturn = func() { };
+			noReturn();
+			`,
+			expected: Null,
+		},
+		{
+			input: `
+			let noReturn = func() { };
+			let noReturnTwo = func() { noReturn(); };
+			noReturn();
+			noReturnTwo();
+			`,
+			expected: Null,
+		},
 	}
 	runVmTests(t, tests)
 }

@@ -164,14 +164,12 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(Null); err != nil {
 				return err
 			}
-		case code.OpCall:
-			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("calling non-function")
+		case code.OpReturn:
+			vm.popFrame()
+			vm.pop()
+			if err := vm.push(Null); err != nil {
+				return err
 			}
-			nf := NewFrame(fn)
-			vm.pushFrame(nf)
-
 		case code.OpReturnValue:
 			returnVal := vm.pop()
 			vm.popFrame()
@@ -179,6 +177,13 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(returnVal); err != nil {
 				return err
 			}
+		case code.OpCall:
+			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function")
+			}
+			nf := NewFrame(fn)
+			vm.pushFrame(nf)
 		case code.OpIndex:
 			var (
 				index = vm.pop()
