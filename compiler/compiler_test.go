@@ -476,7 +476,7 @@ func TestCompilerScopes(t *testing.T) {
 	if compiler.scopeIndex != 0 {
 		t.Errorf("scopeIndex wrong. got=%d, want=%d", compiler.scopeIndex, 0)
 	}
-	// globalSymbolTable := compiler.symbolTable
+	globalSymbolTable := compiler.symbolTable
 
 	compiler.emit(code.OpMul)
 
@@ -494,20 +494,20 @@ func TestCompilerScopes(t *testing.T) {
 	if last.OpCode != code.OpSub {
 		t.Errorf("lastInstruction.OpCode wrong. got=%d, want=%d", last.OpCode, code.OpAdd)
 	}
-	// if compiler.symbolTable.Outer != globalSymbolTable {
-	// 	t.Errorf("compiler did not enclose symbolTable")
-	// }
+	if compiler.symbolTable.Outer != globalSymbolTable {
+		t.Errorf("compiler did not enclose symbolTable")
+	}
 	compiler.leaveScope()
 
 	if compiler.scopeIndex != 0 {
 		t.Errorf("scopeIndex wrong. got=%d, want=%d", compiler.scopeIndex, 0)
 	}
-	// if compiler.symbolTable != globalSymbolTable {
-	// 	t.Errorf("compiler did not restore global symbol table")
-	// }
-	// if compiler.symbolTable.Outer != nil {
-	// 	t.Errorf("compiler modified global symbol table incorrectly")
-	// }
+	if compiler.symbolTable != globalSymbolTable {
+		t.Errorf("compiler did not restore global symbol table")
+	}
+	if compiler.symbolTable.Outer != nil {
+		t.Errorf("compiler modified global symbol table incorrectly")
+	}
 	compiler.emit(code.OpAdd)
 
 	if len(compiler.scopes[compiler.scopeIndex].instructions) != 2 {
@@ -702,7 +702,7 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	}
 }
 
-/*func TestLetStatementScopes(t *testing.T) {
+func TestLetStatementScopes(t *testing.T) {
 	tests := []compilerTestCase{
 		{
 			input: `
@@ -719,7 +719,7 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 			expectedInstructions: []code.Instructions{
 				code.MakeInstruction(code.OpConstant, 0),
 				code.MakeInstruction(code.OpSetGlobal, 0),
-				code.MakeInstruction(code.OpClosure, 1, 0),
+				code.MakeInstruction(code.OpConstant, 1),
 				code.MakeInstruction(code.OpPop),
 			},
 		},
@@ -740,7 +740,7 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 				},
 			},
 			expectedInstructions: []code.Instructions{
-				code.MakeInstruction(code.OpClosure, 1, 0),
+				code.MakeInstruction(code.OpConstant, 1),
 				code.MakeInstruction(code.OpPop),
 			},
 		},
@@ -767,14 +767,14 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 				},
 			},
 			expectedInstructions: []code.Instructions{
-				code.MakeInstruction(code.OpClosure, 2, 0),
+				code.MakeInstruction(code.OpConstant, 2),
 				code.MakeInstruction(code.OpPop),
 			},
 		},
 	}
 
 	runCompilerTests(t, tests)
-}*/
+}
 
 /*func TestBuiltins(t *testing.T) {
 	tests := []compilerTestCase{

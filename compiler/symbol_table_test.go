@@ -6,10 +6,10 @@ func TestDefine(t *testing.T) {
 	expected := map[string]Symbol{
 		"a": {"a", GlobalScope, 0},
 		"b": {"b", GlobalScope, 1},
-		// "c": {"c", LocalScope, 0},
-		// "d": {"d", LocalScope, 1},
-		// "e": {"e", LocalScope, 0},
-		// "f": {"f", LocalScope, 1},
+		"c": {"c", LocalScope, 0},
+		"d": {"d", LocalScope, 1},
+		"e": {"e", LocalScope, 0},
+		"f": {"f", LocalScope, 1},
 	}
 	global := NewSymbolTable()
 
@@ -21,26 +21,26 @@ func TestDefine(t *testing.T) {
 	if b != expected["b"] {
 		t.Errorf("expected a=%+v, got=%+v", expected["b"], b)
 	}
-	// firstLocal := NewEnclosedSymbolTable(global)
-	//
-	// c := firstLocal.Define("c")
-	// if c != expected["c"] {
-	// 	t.Errorf("expected a=%+v, got=%+v", expected["c"], c)
-	// }
-	// d := firstLocal.Define("d")
-	// if d != expected["d"] {
-	// 	t.Errorf("expected a=%+v, got=%+v", expected["d"], d)
-	// }
-	// secondLocal := NewEnclosedSymbolTable(firstLocal)
-	//
-	// e := secondLocal.Define("e")
-	// if e != expected["e"] {
-	// 	t.Errorf("expected a=%+v, got=%+v", expected["e"], e)
-	// }
-	// f := secondLocal.Define("f")
-	// if f != expected["f"] {
-	// 	t.Errorf("expected a=%+v, got=%+v", expected["f"], f)
-	// }
+	firstLocal := NewEnclosedSymbolTable(global)
+
+	c := firstLocal.Define("c")
+	if c != expected["c"] {
+		t.Errorf("expected a=%+v, got=%+v", expected["c"], c)
+	}
+	d := firstLocal.Define("d")
+	if d != expected["d"] {
+		t.Errorf("expected a=%+v, got=%+v", expected["d"], d)
+	}
+	secondLocal := NewEnclosedSymbolTable(firstLocal)
+
+	e := secondLocal.Define("e")
+	if e != expected["e"] {
+		t.Errorf("expected a=%+v, got=%+v", expected["e"], e)
+	}
+	f := secondLocal.Define("f")
+	if f != expected["f"] {
+		t.Errorf("expected a=%+v, got=%+v", expected["f"], f)
+	}
 }
 
 func TestResolveGlobal(t *testing.T) {
@@ -63,8 +63,6 @@ func TestResolveGlobal(t *testing.T) {
 		}
 	}
 }
-
-/*
 
 func TestResolveLocal(t *testing.T) {
 	global := NewSymbolTable()
@@ -143,6 +141,7 @@ func TestResolveNestedLocal(t *testing.T) {
 	}
 }
 
+/*
 func TestDefineResolveBuiltins(t *testing.T) {
 	global := NewSymbolTable()
 	firstLocal := NewEnclosedSymbolTable(global)
@@ -227,7 +226,10 @@ func TestResolveFree(t *testing.T) {
 			}
 		}
 		if len(tt.table.FreeSymbols) != len(tt.expectedFreeSymbols) {
-			t.Errorf("Wrong number of free symbols. got=%d, want=%d", len(tt.table.FreeSymbols), len(tt.expectedFreeSymbols))
+			t.Errorf(
+				"Wrong number of free symbols. got=%d, want=%d",
+				len(tt.table.FreeSymbols), len(tt.expectedFreeSymbols),
+			)
 			continue
 		}
 		for i, sym := range tt.expectedFreeSymbols {
