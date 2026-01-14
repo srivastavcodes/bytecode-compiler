@@ -213,30 +213,29 @@ func TestCallingFunctionsWithoutArguments(t *testing.T) {
 	runVmTests(t, tests)
 }
 
-// func TestFirstClassFunctions(t *testing.T) {
-// 	tests := []vmTestCase{
-// 		{
-// 			input: `
-// 			let returnsOne = fn() { 1; };
-// 			let returnsOneReturner = fn() { returnsOne; };
-// 			returnsOneReturner()();
-// 			`,
-// 			expected: 1,
-// 		},
-// 		{
-// 			input: `
-// 			let returnsOneReturner = fn() {
-// 				let returnsOne = fn() { 1; };
-// 				returnsOne;
-// 			};
-// 			returnsOneReturner()();
-// 			`,
-// 			expected: 1,
-// 		},
-// 	}
-//
-// 	runVmTests(t, tests)
-// }
+func TestFirstClassFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let returnsOne = func() { 1; };
+			let returnsOneReturner = func() { returnsOne; };
+			returnsOneReturner()();
+			`,
+			expected: 1,
+		},
+		// {
+		// 	input: `
+		// 	let returnsOneReturner = fn() {
+		// 		let returnsOne = fn() { 1; };
+		// 		returnsOne;
+		// 	};
+		// 	returnsOneReturner()();
+		// 	`,
+		// 	expected: 1,
+		// },
+	}
+	runVmTests(t, tests)
+}
 
 // func TestCallingFunctionsWithBindings(t *testing.T) {
 // 	tests := []vmTestCase{

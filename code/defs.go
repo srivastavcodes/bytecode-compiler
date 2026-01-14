@@ -25,6 +25,8 @@ const (
 	OpCall
 	OpReturnValue
 	OpReturn
+	OpGetLocal
+	OpSetLocal
 )
 
 type Instructions []byte
@@ -63,4 +65,6 @@ var definitions = map[Opcode]*Definition{
 	OpCall:          {"OpCall", byte0},
 	OpReturnValue:   {"OpReturnValue", byte0},
 	OpReturn:        {"OpReturn", byte0},
+	OpGetLocal:      {"OpGetLocal", []int{1}},
+	OpSetLocal:      {"OpSetLocal", []int{1}},
 }
