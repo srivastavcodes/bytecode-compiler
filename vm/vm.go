@@ -45,7 +45,7 @@ func NewVMWithGlobalsStore(bytecode *compiler.ByteCode, globals []object.Object)
 func NewVM(bytecode *compiler.ByteCode) *VM {
 	var (
 		mainFn    = &object.CompiledFunction{Instructions: bytecode.Instructions}
-		mainFrame = NewFrame(mainFn)
+		mainFrame = NewFrame(mainFn, 0)
 		frames    = make([]*Frame, MaxFrames)
 	)
 	frames[0] = mainFrame
@@ -148,6 +148,21 @@ func (vm *VM) RunVM() error {
 			if err != nil {
 				return err
 			}
+		case code.OpSetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
+
+		case code.OpGetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+
+			ob := vm.stack[frame.basePointer+int(localIndex)]
+			if err := vm.push(ob); err != nil {
+				return err
+			}
 		case code.OpSetGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
@@ -164,17 +179,17 @@ func (vm *VM) RunVM() error {
 			if err := vm.push(Null); err != nil {
 				return err
 			}
-		case code.OpReturn:
-			vm.popFrame()
-			vm.pop()
-			if err := vm.push(Null); err != nil {
-				return err
-			}
 		case code.OpReturnValue:
 			returnVal := vm.pop()
-			vm.popFrame()
-			vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.basePointer - 1
 			if err := vm.push(returnVal); err != nil {
+				return err
+			}
+		case code.OpReturn:
+			frame := vm.popFrame()
+			vm.sp = frame.basePointer - 1
+			if err := vm.push(Null); err != nil {
 				return err
 			}
 		case code.OpCall:
@@ -182,8 +197,9 @@ func (vm *VM) RunVM() error {
 			if !ok {
 				return fmt.Errorf("calling non-function")
 			}
-			nf := NewFrame(fn)
+			nf := NewFrame(fn, vm.sp)
 			vm.pushFrame(nf)
+			vm.sp = nf.basePointer + fn.NumLocals
 		case code.OpIndex:
 			var (
 				index = vm.pop()

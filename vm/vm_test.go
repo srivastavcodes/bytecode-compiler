@@ -223,71 +223,70 @@ func TestFirstClassFunctions(t *testing.T) {
 			`,
 			expected: 1,
 		},
-		// {
-		// 	input: `
-		// 	let returnsOneReturner = fn() {
-		// 		let returnsOne = fn() { 1; };
-		// 		returnsOne;
-		// 	};
-		// 	returnsOneReturner()();
-		// 	`,
-		// 	expected: 1,
-		// },
+		{
+			input: `
+			let returnsOneReturner = func() {
+				let returnsOne = func() { 1; };
+				returnsOne;
+			};
+			returnsOneReturner()();
+			`,
+			expected: 1,
+		},
 	}
 	runVmTests(t, tests)
 }
 
-// func TestCallingFunctionsWithBindings(t *testing.T) {
-// 	tests := []vmTestCase{
-// 		{
-// 			input: `
-// 			let one = fn() { let one = 1; one };
-// 			one();
-// 			`,
-// 			expected: 1,
-// 		},
-// 		{
-// 			input: `
-// 			let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
-// 			oneAndTwo();
-// 			`,
-// 			expected: 3,
-// 		},
-// 		{
-// 			input: `
-// 			let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
-// 			let threeAndFour = fn() { let three = 3; let four = 4; three + four; };
-// 			oneAndTwo() + threeAndFour();
-// 			`,
-// 			expected: 10,
-// 		},
-// 		{
-// 			input: `
-// 			let firstFoobar = fn() { let foobar = 50; foobar; };
-// 			let secondFoobar = fn() { let foobar = 100; foobar; };
-// 			firstFoobar() + secondFoobar();
-// 			`,
-// 			expected: 150,
-// 		},
-// 		{
-// 			input: `
-// 			let globalSeed = 50;
-// 			let minusOne = fn() {
-// 				let num = 1;
-// 				globalSeed - num;
-// 			}
-// 			let minusTwo = fn() {
-// 				let num = 2;
-// 				globalSeed - num;
-// 			}
-// 			minusOne() + minusTwo();
-// 			`,
-// 			expected: 97,
-// 		},
-// 	}
-//
-// 	runVmTests(t, tests)
-// }
+func TestCallingFunctionsWithBindings(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let one = func() { let one = 1; one };
+			one();
+			`,
+			expected: 1,
+		},
+		{
+			input: `
+			let oneAndTwo = func() { let one = 1; let two = 2; one + two; };
+			oneAndTwo();
+			`,
+			expected: 3,
+		},
+		{
+			input: `
+			let oneAndTwo = func() { let one = 1; let two = 2; one + two; };
+			let threeAndFour = func() { let three = 3; let four = 4; three + four; };
+			oneAndTwo() + threeAndFour();
+			`,
+			expected: 10,
+		},
+		{
+			input: `
+			let firstFoobar = func() { let foobar = 50; foobar; };
+			let secondFoobar = func() { let foobar = 100; foobar; };
+			firstFoobar() + secondFoobar();
+			`,
+			expected: 150,
+		},
+		{
+			input: `
+			let globalSeed = 50;
+			let minusOne = func() {
+				let num = 1;
+				globalSeed - num;
+			}
+			let minusTwo = func() {
+				let num = 2;
+				globalSeed - num;
+			}
+			minusOne() + minusTwo();
+			`,
+			expected: 97,
+		},
+	}
+	runVmTests(t, tests)
+}
 
 // func TestCallingFunctionsWithArgumentsAndBindings(t *testing.T) {
 // 	tests := []vmTestCase{
